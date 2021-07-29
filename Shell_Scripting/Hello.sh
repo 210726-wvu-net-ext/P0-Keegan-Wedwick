@@ -1,5 +1,9 @@
-#! /usr/bin/bash
+# /usr/bin/bash
 
-echo "What are three of your favorite movies?"
+echo "What are your top 3 favorite movies?"
 read -a movies
-echo "These are your favorite movies: ${movies[0]} ${movies[1]} ${movies[2]}"
+echo "You chose:"
+echo "${movies[0]}"
+echo "${movies[1]}"
+echo "${movies[2]}"
+echo "These are all great movies."
