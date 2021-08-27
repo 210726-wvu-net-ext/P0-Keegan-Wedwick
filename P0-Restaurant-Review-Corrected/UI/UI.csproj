@@ -3,7 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
     <ProjectReference Include="..\BL\BL.csproj" />
-    
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +20,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <DocumentationFile>UI-doc.xml</DocumentationFile>
   </PropertyGroup>
+
 
 </Project>

@@ -10,19 +10,16 @@ namespace UI
 {
     public class MainMenu : IMenu
     {
-        /// <summary>
-        /// calling the BL layers for users/restaurants and reviewslayer
-        /// </summary>
+
+        // calling the BL layers for users/restaurants and reviewslayer
         private IUsersBL _userbl;
 
         private IRestaurantsBL _restaurantbl;
 
         private IReviewsBL _reviewsbl;
 
-        /// <summary>
-        /// CurrentSession aka logged in user? is instantiated
-        /// IsLoggedIn is how we filter the commands
-        /// </summary>
+        // CurrentSession aka logged in user? is instantiated
+        // IsLoggedIn is how we filter the commands
         private Session _currentSession;
 
         public bool IsLoggedIn => _currentSession.CurrentUser is not null;
@@ -64,7 +61,6 @@ namespace UI
             public bool MustBeLoggedIn { get; set; }
         }
 
-
         /// <summary>
         /// The command list that users select. We filter based on the MustBeAdmin and MustBeLoggedIn
         /// </summary>
@@ -90,21 +86,21 @@ namespace UI
                     Command = "2",
                     Execution = SeeAllRestaurants,
                     MustBeAdmin = false,
-                    MustBeLoggedIn = false
+                    MustBeLoggedIn = true
                 },
                 new Commands(){
                     CommandName = "[3] Search Restaurant by Name",
                     Command = "3",
                     Execution = SeeRestrauntByName,
                     MustBeAdmin = false,
-                    MustBeLoggedIn = false
+                    MustBeLoggedIn = true
                 },
                 new Commands(){
-                    CommandName = "[4] Shut Down",
+                    CommandName = "[4] See My Reviews",
                     Command = "4",
-                    Execution = ShutDown,
+                    Execution = SeeMyReviews,
                     MustBeAdmin = false,
-                    MustBeLoggedIn = false,
+                    MustBeLoggedIn = true
                 },
                 new Commands(){
                     CommandName = "[5] Find A User",
@@ -135,26 +131,33 @@ namespace UI
                     MustBeLoggedIn = true,
                 },
                 new Commands(){
-                    CommandName = "[9] Delete User",
+                    CommandName = "[9] Create Restaurant",
                     Command = "9",
-                    Execution = DeleteUser,
-                    MustBeAdmin = true,
+                    Execution = CreateRestaurant,
+                    MustBeAdmin = false,
                     MustBeLoggedIn = true
                 },
                 new Commands(){
-                    CommandName = "[10] View Reviews by Restaurat",
+                    CommandName = "[10] View Reviews by Restaurant",
                     Command = "10",
                     Execution = ViewReviewsByRestaurant,
                     MustBeAdmin = false,
-                    MustBeLoggedIn = false
+                    MustBeLoggedIn = true
                 },
-                // new Commands(){
-                //     CommandName = "[] ",
-                //     Command = "",
-                //     Execution = ,
-                //     MustBeAdmin = false,
-                //     MustBeLoggedIn = false
-                // },
+                new Commands(){
+                    CommandName = "[11] Shut Down",
+                    Command = "11",
+                    Execution = ShutDown,
+                    MustBeAdmin = false,
+                    MustBeLoggedIn = false,
+                },
+                new Commands(){
+                    CommandName = "[12] Logout",
+                    Command = "12",
+                    Execution = Logout,
+                    MustBeAdmin = false,
+                    MustBeLoggedIn = true,
+                },
 
             };
         }
@@ -164,11 +167,9 @@ namespace UI
         /// /// /// </summary>
         public bool RunCommand(string? Input)
         {
+            // checks if the command was acceptable
+            var command = AllCommands.FirstOrDefault(i => i.Command == Input);
 
-
-
-            /// checks if the command was acceptable
-            var command = AllCommands.First(i => i.Command == Input);
             if (command is null)
             {
                 Log.Error("Invalid Command.  Try Again.");
@@ -179,7 +180,7 @@ namespace UI
                 Log.Error("System error");
                 return false;
             }
-            /// runs the assigned function per the user selected command
+            // runs the assigned function per the user selected command
             command.Execution.Invoke();
             return true;
         }
@@ -189,7 +190,7 @@ namespace UI
         /// </summary>
         public void PrintAllValidCommandOptions()
         {
-
+            // Logged in and Admin
             if ((IsLoggedIn == true) && (_currentSession.CurrentUser?.IsAdmin == 1))
             {
                 List<Commands> adminCommands = AllCommands.ToList();
@@ -198,6 +199,7 @@ namespace UI
                     Console.WriteLine(i.CommandName);
                 }
             }
+            //logged in not admin
             else if ((IsLoggedIn == true) && (_currentSession.CurrentUser?.IsAdmin == 0))
             {
                 List<Commands> memberCommands = AllCommands
@@ -208,6 +210,7 @@ namespace UI
                     Console.WriteLine(i.CommandName);
                 }
             }
+            // not logged in
             else
             {
                 List<Commands> validCommands = AllCommands
@@ -219,12 +222,6 @@ namespace UI
                     Console.WriteLine(i.CommandName);
                 }
             }
-            // Get all valid commands that can be run from AllCommands, based on is logged in and is admin
-            // ordered from generic to specific
-
-
-
-
         }
 
         /// <summary>
@@ -232,115 +229,28 @@ namespace UI
         /// </summary>
         public void Start()
         {
-
-
-            Console.WriteLine("Welcome to Restaurant Reviewer!\nPlease choose one of the following options below by entering the corresponding number: ");
+            Console.WriteLine("Welcome to Restaurant Reviewer!\n");
 
             do
             {
+                //When app starts, it displays not logged in commands
                 PrintAllValidCommandOptions();
+                Console.WriteLine("Please choose one of the following options below by entering the corresponding number: ");
                 string startingInput;
                 do
                 {
+                    //user then makes a selections
                     startingInput = Console.ReadLine();
                 } while (String.IsNullOrWhiteSpace(startingInput));
 
+                //then puts in the user input
                 RunCommand(startingInput);
-                // switch (startingInput)
-                // {
-                //     case "0":
-                //         Login();
-                //         break;
-                //     case "1":
-                //         SignUp();
-                //         break;
-                //     case "2":
-                //         SeeAllRestaurants();
-                //         break;
-                //     case "3":
-                //         ShutDown();
-                //         break;
-                //     default:
-                //         Console.WriteLine("Please type your answer correctly!");
-                //         break;
-                // }
 
             } while (shutDownRequested == false);
-
-            // shutDownRequested = true;
-
-            // string[] choices = new string[] { 
-            //     "[0] Sign up", 
-            //     "[1] Find A User", 
-            //     "[2] View All Users", 
-            //     "[3] View All Restraunts", 
-            //     "[4] View All Reviews", 
-            //     "[5] Search Restaurant By Name", 
-            //     "[6] Add A Restraunt", 
-            //     "[7] Write a Review", 
-            //     "[8] Delete User", 
-            //     "[9] Exit" };
-
-            // do
-            // {
-            //     foreach (string choice in choices)
-            //     {
-            //         Console.WriteLine($"{choice}");
-            //     }
-
-            //     string userInput = Console.ReadLine();
-            //     switch (userInput)
-            //     {
-            //         case "0":
-            //             SignUp();
-            //             break;
-            //         case "1":
-            //             FindUsersByIdUI();
-            //             break;
-            //         case "2":
-            //             Console.WriteLine("You are viewing all of the members\n ---------- \n");
-            //             SeeAllMembers(); // done
-            //             break;
-            //         case "3":
-            //             SeeAllRestaurants(); // done
-            //             break;
-            //         case "4":
-            //             SeeAllReviews(); // done
-            //             break;
-            //         case "5":
-            //             SeeRestrauntByName(); // done
-            //             break;
-            //         case "6":
-            //             CreateRestaurant(); // done, need to return id
-            //             break;
-            //         case "7":
-            //             CreateReviewUI();
-            //             break;
-            //         case "8":
-            //             DeleteUser();
-            //             break;
-            //         case "9":
-            //             ShutDown();
-            //             break;
-            //         default:
-            //             Console.WriteLine("Please type your answer correctly!");
-            //             break;
-            //     }
-            // } while (shutDownRequested == false);
         }
 
-        // private Member FindMember(List<Member> members, string prompt)
-        // {
-        //     Console.WriteLine(prompt);
-        //     Console.WriteLine("Please enter user's username: ");
-
-
-
-        //     Console.WriteLine("This is the user you're looking for: ");
-        // }
-
         /// <summary>
-        /// Creates a new user
+        /// This is how you create a user. It validates Email and Username as they must be unique.
         /// </summary>
         private void SignUp()
         {
@@ -363,24 +273,49 @@ namespace UI
                 userToAdd.LastName = Console.ReadLine();
             } while (String.IsNullOrWhiteSpace(userToAdd.LastName));
 
+            string checkingUsername;
+            string createdUsername;
             do
             {
-                Console.Write("Please enter your username: ");
-                userToAdd.Username = Console.ReadLine();
-            } while (String.IsNullOrWhiteSpace(userToAdd.Username));
+                do
+                {
+                    Console.Write("Please enter your username: ");
+                    createdUsername = Console.ReadLine();
+                } while (String.IsNullOrWhiteSpace(createdUsername));
+                Console.WriteLine("Checking if username is unique....\n");
+                checkingUsername = _userbl.CheckUniqueUsername(createdUsername);
 
+                if (createdUsername == checkingUsername)
+                {
+                    Log.Error($"{createdUsername} was not unique! Try Again.");
+                }
+
+            } while (createdUsername == checkingUsername);
+            Console.WriteLine("Username is unique!\n");
+            userToAdd.Username = createdUsername;
+
+            string checkingEmail;
+            string createdEmail;
             do
             {
-                Console.Write("Please enter your email: ");
-                userToAdd.Email = Console.ReadLine();
-                // RegexUtilities.IsValidEmail(newUser.Email); 
-            } while (String.IsNullOrWhiteSpace(userToAdd.Email));
+                do
+                {
+                    Console.Write("Please enter your email: ");
+                    createdEmail = Console.ReadLine();
+                } while (String.IsNullOrWhiteSpace(createdEmail));
+                Console.WriteLine("Checking if email is unique....\n");
+                checkingEmail = _userbl.CheckUniqueEmail(createdEmail);
 
-            //TODO: NEED TO CHECK EMAIL AGAINST DATABASE
+                if (createdEmail == checkingEmail)
+                {
+                    Log.Error($"{createdEmail} was not unique! Try Again.");
+                }
 
-            /// <summary>
-            /// make sure the password is the same and not empty
-            /// </summary>
+            } while (createdEmail == checkingEmail);
+            Console.WriteLine("Email is unique!\n");
+            userToAdd.Email = createdEmail;
+
+            // make sure the password is the same and not empty
             string password1;
             string password2;
             do
@@ -403,18 +338,13 @@ namespace UI
             } while (password1 != password2);
 
             userToAdd.Password = password1;
-
-            // Console.Write("Is this User an Admin?");
             userToAdd.IsAdmin = 0;
 
-            /// <summary>
-            /// trying to add the user to db and handle the exception
-            /// </summary>
-            /// <value></value>
-
+            // trying to add the user to db and handle the exception
             try
             {
                 userToAdd = _userbl.AddUser(userToAdd);
+                _currentSession.CurrentUser = userToAdd;
 
                 Console.WriteLine("Member Created!\n \n");
                 Console.WriteLine($"ID: {userToAdd.Id}, Name: {userToAdd.FirstName} {userToAdd.LastName}, Email: {userToAdd.Email}, Username: {userToAdd.Username}, Admin: {userToAdd.IsAdmin}\n");
@@ -427,7 +357,27 @@ namespace UI
         }
 
         /// <summary>
-        /// logs in the user
+        /// Check if email is unique in the db
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        private string CheckEmailIsUnique(string email)
+        {
+            return email = _userbl.CheckUniqueEmail(email);
+        }
+        /// <summary>
+        /// Check if username is unique in the db
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        private string CheckUsernameIsUnique(string username)
+        {
+            return username = _userbl.CheckUniqueUsername(username);
+
+        }
+
+        /// <summary>
+        /// Log in User to application
         /// </summary>
         private void Login()
         {
@@ -453,7 +403,7 @@ namespace UI
             checkUser = _userbl.CheckUserLogin(checkUser);
 
 
-            /// make suure rhe user was found and not empty
+            // make suure rhe user was found and not empty
             if (checkUser.Username != null)
             {
                 try
@@ -516,8 +466,8 @@ namespace UI
             try
             {
                 restaurantToAdd = _restaurantbl.AddRestaurant(restaurantToAdd);
-                Console.WriteLine("Member Created!\n \n");
-                Console.WriteLine($"ID: {restaurantToAdd.Id}, Name: {restaurantToAdd.Name}, Location: {restaurantToAdd.Location} {restaurantToAdd.ZipCode}\n");
+                Console.WriteLine("Restaurant Created!\n\n");
+                Console.WriteLine($"ID: {restaurantToAdd.Id}\nName: {restaurantToAdd.Name}\nLocation: {restaurantToAdd.Location} {restaurantToAdd.ZipCode}\n");
 
             }
             catch (Exception ex)
@@ -564,9 +514,10 @@ namespace UI
             newReview.Body = body;
 
             int userRating = 0;
-            Console.WriteLine("Please enter your Rating 1-5: ");
+
             do
             {
+                Console.WriteLine("Please enter your Rating between 1-5: ");
                 try
                 {
                     userRating = Convert.ToInt32(Console.ReadLine());
@@ -579,7 +530,6 @@ namespace UI
                 //     userRating = 0;
                 //     Console.WriteLine
                 // }
-                Console.WriteLine("You must enter a number between 1-5");
 
             } while (userRating < 1 || userRating > 5);
             newReview.Rating = userRating;
@@ -604,7 +554,7 @@ namespace UI
         /// </summary>
         private void SeeAllMembers()
         {
-            if (IsLoggedIn == false)
+            if ((IsLoggedIn == false) && (_currentSession.CurrentUser?.IsAdmin == 0 || _currentSession.CurrentUser == null))
             {
                 Log.Error("You must be logged in and an admin to do this!");
                 return;
@@ -617,13 +567,16 @@ namespace UI
             }
         }
 
+        /// <summary>
+        /// User can view all restaurants in the database
+        /// </summary>
         private void SeeAllRestaurants()
         {
             Console.WriteLine("You are viewing all of the restaurants\n ---------- \n");
             List<Restaurants> restaurants = _restaurantbl.ViewAllRestaurants();
             foreach (Restaurants restaurant in restaurants)
             {
-                Console.WriteLine($"ID: {restaurant.Id} Name:{restaurant.Name} Location: {restaurant.Location} Zip Code: {restaurant.ZipCode}");
+                Console.WriteLine($"ID: {restaurant.Id} Name: {restaurant.Name}\nLocation: {restaurant.Location} {restaurant.ZipCode}\n");
             }
         }
 
@@ -667,10 +620,10 @@ namespace UI
             }
             else
             {
-                Console.WriteLine("We found {0}!", foundRestaurant.Name);
-            }
+                Console.WriteLine("\nWe found it!\n");
+                Console.WriteLine($"\tID: {foundRestaurant.Id}\n\tName: {foundRestaurant.Name}\n\tLocation: {foundRestaurant.Location} {foundRestaurant.ZipCode}\n");
 
-            Console.WriteLine(foundRestaurant);
+            }
         }
 
         /// <summary>
@@ -681,8 +634,8 @@ namespace UI
             List<Restaurants> restaurants = _restaurantbl.ViewAllRestaurants();
 
             Restaurants foundRestaurant = SelectAReviewByRestaurantIdUI(restaurants, "Pick a restaurant by entering the corresponding [number]: ");
-
-            List<RestaurantReviews> reviews = _reviewsbl.GetReviewsbyRestaurantIdBL(foundRestaurant.Id);
+            int foundId = foundRestaurant.Id;
+            List<RestaurantReviews> reviews = _reviewsbl.GetReviewsbyRestaurantIdBL(foundId);
 
             decimal sum = 0;
             int n = 0;
@@ -701,6 +654,12 @@ namespace UI
                 Console.WriteLine($"Title: {review.Title}\n\tBody: {review.Body}\n\tRating:{review.Rating}\n\tBy:{review.Username}\n");
             }
         }
+        /// <summary>
+        /// This prompts the user to select a restaurant from the list and returns the restaurant
+        /// </summary>
+        /// <param name="restaurants"></param>
+        /// <param name="prompt"></param>
+        /// <returns></returns>
         private Restaurants SelectAReviewByRestaurantIdUI(List<Restaurants> restaurants, string prompt)
         {
             Console.WriteLine(prompt);
@@ -731,7 +690,7 @@ namespace UI
         /// </summary>
         private void FindUsersByIdUI()
         {
-            if (IsLoggedIn == false)
+            if ((IsLoggedIn == false) && (_currentSession.CurrentUser?.IsAdmin == 0 || _currentSession.CurrentUser == null))
             {
                 Log.Error("You must be logged in and an admin to do this!");
                 return;
@@ -765,7 +724,40 @@ namespace UI
         /// <summary>
         /// Deletes a user from the database. Must be an admin to do so.
         /// </summary>
-        private void DeleteUser()
+        private void DeleteUserUI()
+        {
+            if ((IsLoggedIn == false) && (_currentSession.CurrentUser?.IsAdmin == 0 || _currentSession.CurrentUser == null))
+            {
+                Log.Error("You must be logged in and an admin to do this!");
+                return;
+            }
+            Console.WriteLine("Delete User Requested: ");
+            SeeAllMembers();
+            Console.WriteLine("Please select the User ID to delete: ");
+
+            int userIdInput = 0;
+            do
+            {
+                Console.WriteLine("Please enter your Rating between 1-5: ");
+                try
+                {
+                    userIdInput = Convert.ToInt32(Console.ReadLine());
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("{0}, You didn't enter only numbers or a number between 1-5. Please try again.", ex);
+                }
+                // if(userRating < 1 || userRating > 5) {
+                //     userRating = 0;
+                //     Console.WriteLine
+                // }
+
+            } while (userIdInput == 0);
+            Console.WriteLine("Thank you for selecting. Route currently under construction!");
+
+        }
+
+        private void SeeMyReviews()
         {
             if (IsLoggedIn == false)
             {
@@ -773,8 +765,36 @@ namespace UI
                 return;
             }
 
-            Console.WriteLine("Delete User Requested: ");
+            int currentUserId = _currentSession.CurrentUser.Id;
 
+            List<RestaurantReviews> myReviews = _reviewsbl.SeeMyReviews(currentUserId);
+
+            if (myReviews != null)
+            {
+                foreach (RestaurantReviews review in myReviews)
+                {
+                    Console.WriteLine("-----------------------");
+                    Console.WriteLine($"Restaurant: {review.RestaurantName}\nTitle: {review.Title}\n\tBody: {review.Body}\n\tRating:{review.Rating}\n");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No reviews found :( Try writing some!");
+            }
+
+
+        }
+        
+        private void Logout()
+        {
+             if (IsLoggedIn == false)
+            {
+                Log.Error("You must be logged in and an admin to do this!");
+                return;
+            }
+            string firstName = _currentSession.CurrentUser.FirstName;
+            _currentSession.CurrentUser = null;
+            Log.Debug($"You have successfully logged out! See you next time, {firstName}!");
         }
 
         /// <summary>
@@ -782,6 +802,7 @@ namespace UI
         /// </summary>
         private static void ShutDown()
         {
+            Log.Debug("Shutting down....Goodbye!");
             shutDownRequested = true;
         }
     }
